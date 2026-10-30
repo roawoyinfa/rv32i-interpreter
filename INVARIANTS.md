@@ -17,3 +17,18 @@ preserve across instruction execution and memory operations.
 
 These invariants the architectural semantics of the RV32I integer register file.
 
+## Memory
+
+### Invariants
+
+- **INV-M-01:** Memory is byte-addressable.
+- **INV-M-02:** Multi-byte values are stored and accessed using the
+  little-endian byte order.
+- **INV-M-03:** All memory accesses must fall entirely within the bounds
+  of the simulated memory.
+
+### Rationale
+
+INV-M-01 and INV-M-02 preserve the memory semantics of the RISC-V RV32I
+architecture, while INV-M-03 prevents undefined behavior in the host language.
+
