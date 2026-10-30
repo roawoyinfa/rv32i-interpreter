@@ -2,13 +2,14 @@
 #define REGISTER_FILE_H
 
 #include <array>
+#include <cstddef>
 #include <cstdint>
 
 namespace rv32i {
 
 class RegisterFile {
 public:
-    static constexpr std::size_t register_count = 32;
+    static constexpr std::size_t REGISTER_COUNT = 32;
 
     RegisterFile() = default;
 
@@ -23,7 +24,7 @@ public:
     void write(std::size_t register_index, std::uint32_t value) noexcept;
 
 private:
-    std::array<uint32_t, register_count> registers_{};
+    std::array<uint32_t, REGISTER_COUNT> registers_{};
 };
 
 }
