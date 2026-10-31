@@ -44,6 +44,8 @@ Memory::write_byte(std::uint32_t address, std::uint8_t value) noexcept
     }
 
     bytes_[address] = value;
+
+    return {};
 }
 
 [[nodiscard]]
@@ -59,6 +61,8 @@ Memory::write_word(std::uint32_t address, std::uint32_t value) noexcept
     for (std::size_t i = 0; i < access_size; ++i) {
         bytes_[address] = static_cast<std::uint8_t>((value >> (i * 8)) & 0xFF);
     }
+
+    return {};
 }
 
 }

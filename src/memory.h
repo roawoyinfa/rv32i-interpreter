@@ -6,9 +6,11 @@
 #include <cstdint>
 #include <expected>
 
-#include "memory_error.h"
-
 namespace rv32i {
+
+enum class MemoryError {
+    OutofBounds
+};
 
 class Memory {
 public:
