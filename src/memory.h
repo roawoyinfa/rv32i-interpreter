@@ -9,7 +9,7 @@
 namespace rv32i {
 
 enum class MemoryError {
-    OutofBounds
+    OUT_OF_BOUNDS
 };
 
 class Memory {
