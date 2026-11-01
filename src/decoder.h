@@ -50,6 +50,18 @@ public:
     [[nodiscard]]
     std::expected<DecodedInstruction, DecoderError>
     decode(std::uint32_t instruction);
+
+    [[nodiscard]]
+    constexpr std::int32_t sign_extend(std::uint32_t value, unsigned bits);
+
+    [[nodiscard]]
+    constexpr std::int32_t decode_s_imm(std::uint32_t instruction);
+
+    [[nodiscard]]
+    constexpr std::int32_t decode_b_imm(std::uint32_t instruction);
+
+    [[nodiscard]]
+    constexpr std::int32_t decode_j_imm(std::uint32_t instruction);
 };
 
 }
