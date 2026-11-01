@@ -4,13 +4,14 @@
 #include <expected>
 
 namespace rv32i {
+namespace {
 
-constexpr std::int32_t Decoder::sign_extend(std::uint32_t value, unsigned bits)
+constexpr std::int32_t sign_extend(std::uint32_t value, unsigned bits)
 {
     return static_cast<std::int32_t>(value << (32 - bits)) >> (32 - bits);
 }
 
-constexpr std::int32_t Decoder::decode_s_imm(std::uint32_t instruction)
+constexpr std::int32_t decode_s_imm(std::uint32_t instruction)
 {
     const std::uint32_t imm =
         ((instruction >> 7) & 0x1F) |
@@ -19,7 +20,7 @@ constexpr std::int32_t Decoder::decode_s_imm(std::uint32_t instruction)
     return sign_extend(imm, 12);
 }
 
-constexpr std::int32_t Decoder::decode_b_imm(std::uint32_t instruction)
+constexpr std::int32_t decode_b_imm(std::uint32_t instruction)
 {
     const std::uint32_t imm =
         (((instruction >> 8) & 0x0F) << 1)  |
@@ -30,7 +31,7 @@ constexpr std::int32_t Decoder::decode_b_imm(std::uint32_t instruction)
     return sign_extend(imm, 13);
 }
 
-constexpr std::int32_t Decoder::decode_j_imm(std::uint32_t instruction)
+constexpr std::int32_t decode_j_imm(std::uint32_t instruction)
 {
     const std::uint32_t imm =
         (((instruction >> 21) & 0x3FF) << 1)  |
@@ -41,8 +42,10 @@ constexpr std::int32_t Decoder::decode_j_imm(std::uint32_t instruction)
     return sign_extend(imm, 21);
 }
 
+}
+
 std::expected<DecodedInstruction, DecoderError>
-Decoder::decode(std::uint32_t instruction)
+decode(std::uint32_t instruction)
 {
     const std::uint8_t opcode = instruction & 0x7F;
 
