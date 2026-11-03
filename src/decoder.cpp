@@ -1,4 +1,5 @@
 #include "decoder.h"
+#include "instruction.h"
 
 #include <cstdint>
 #include <expected>
