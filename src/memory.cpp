@@ -29,7 +29,7 @@ Memory::read_word(std::uint32_t address) const noexcept
     std::uint32_t word = 0;
 
     for (std::size_t i = 0; i < access_size; ++i) {
-        word |= static_cast<std::uint32_t>(bytes_[address]) << (i * 8);
+        word |= static_cast<std::uint32_t>(bytes_[address + i]) << (i * 8);
     }
 
     return word;
@@ -59,7 +59,7 @@ Memory::write_word(std::uint32_t address, std::uint32_t value) noexcept
     }
 
     for (std::size_t i = 0; i < access_size; ++i) {
-        bytes_[address] = static_cast<std::uint8_t>((value >> (i * 8)) & 0xFF);
+        bytes_[address + i] = static_cast<std::uint8_t>((value >> (i * 8)) & 0xFF);
     }
 
     return {};
