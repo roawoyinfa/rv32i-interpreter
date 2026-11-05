@@ -22,6 +22,10 @@ Memory::read_word(std::uint32_t address) const noexcept
 {
     constexpr std::size_t access_size = sizeof(std::uint32_t);
 
+    if (address % access_size != 0) {
+        return std::unexpected(MemoryError::MISALIGNED);
+    }
+
     if (address >= MEMORY_CAPACITY || access_size > MEMORY_CAPACITY - address) {
         return std::unexpected(MemoryError::OUT_OF_BOUNDS);
     }
@@ -53,6 +57,10 @@ std::expected<void, MemoryError>
 Memory::write_word(std::uint32_t address, std::uint32_t value) noexcept
 {
     constexpr std::size_t access_size = sizeof(std::uint32_t);
+
+    if (address % access_size != 0) {
+        return std::unexpected(MemoryError::MISALIGNED);
+    }
 
     if (address >= MEMORY_CAPACITY || access_size > MEMORY_CAPACITY - address) {
         return std::unexpected(MemoryError::OUT_OF_BOUNDS);
