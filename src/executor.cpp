@@ -1,4 +1,5 @@
 #include "executor.h"
+#include "execution_error.h"
 #include "instruction.h"
 #include "memory.h"
 
@@ -124,7 +125,15 @@ lw(std::uint8_t rd, std::int32_t offset, std::uint8_t rs1,
     const auto result{context.memory.read_word(word_address)};
 
     if (!result) {
-        return std::unexpected(ExecutionError::MEMORY_OUT_OF_BOUNDS);
+        switch (result.error()) {
+            case MemoryError::MISALIGNED:
+                return std::unexpected(
+                    ExecutionError::MEMORY_ACCESS_MISALIGNED);
+
+            case MemoryError::OUT_OF_BOUNDS:
+                return std::unexpected(
+                    ExecutionError::MEMORY_ACCESS_OUT_OF_BOUNDS);
+        }
     }
 
     context.registers.write(rd, result.value());
@@ -146,7 +155,15 @@ sw(std::uint8_t rs2, std::int32_t offset, std::uint8_t rs1,
     const auto result{context.memory.write_word(word_address, value)};
 
     if (!result) {
-        return std::unexpected(ExecutionError::MEMORY_OUT_OF_BOUNDS);
+        switch (result.error()) {
+            case MemoryError::MISALIGNED:
+                return std::unexpected(
+                    ExecutionError::MEMORY_ACCESS_MISALIGNED);
+
+            case MemoryError::OUT_OF_BOUNDS:
+                return std::unexpected(
+                    ExecutionError::MEMORY_ACCESS_OUT_OF_BOUNDS);
+        }
     }
 
     return {};
@@ -164,7 +181,7 @@ lb(std::uint8_t rd, std::int32_t offset, std::uint8_t rs1,
     const auto result{context.memory.read_byte(word_address)};
 
     if (!result) {
-        return std::unexpected(ExecutionError::MEMORY_OUT_OF_BOUNDS);
+        return std::unexpected(ExecutionError::MEMORY_ACCESS_OUT_OF_BOUNDS);
     }
 
     const std::int32_t value = static_cast<std::int8_t>(result.value());
@@ -188,7 +205,7 @@ sb(std::uint8_t rs2, std::int32_t offset, std::uint8_t rs1,
     const auto result{context.memory.write_byte(word_address, value)};
 
     if (!result) {
-        return std::unexpected(ExecutionError::MEMORY_OUT_OF_BOUNDS);
+        return std::unexpected(ExecutionError::MEMORY_ACCESS_OUT_OF_BOUNDS);
     }
 
     return {};

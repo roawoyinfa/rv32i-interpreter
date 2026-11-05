@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <expected>
 
+#include "execution_error.h"
 #include "instruction.h"
 #include "memory.h"
 #include "register_file.h"
@@ -14,12 +15,6 @@ struct ExecutionContext {
     RegisterFile& registers;
     Memory& memory;
     std::uint32_t& pc;
-};
-
-enum class ExecutionError {
-    MEMORY_OUT_OF_BOUNDS,
-    INSTRUCTION_ADDRESS_MISALIGNED,
-    INSTRUCTION_ADDRESS_OUT_OF_BOUNDS
 };
 
 [[nodiscard]]
