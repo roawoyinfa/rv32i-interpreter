@@ -234,7 +234,7 @@ beq(std::uint8_t rs1, std::uint8_t rs2, std::int32_t offset,
         return std::unexpected(ExecutionError::INSTRUCTION_ADDRESS_MISALIGNED);
     }
 
-    context.pc = target_address;
+    context.next_pc = target_address;
 
     return {};
 }
@@ -262,7 +262,7 @@ bne(std::uint8_t rs1, std::uint8_t rs2, std::int32_t offset,
         return std::unexpected(ExecutionError::INSTRUCTION_ADDRESS_MISALIGNED);
     }
 
-    context.pc = target_address;
+    context.next_pc = target_address;
 
     return {};
 }
@@ -290,7 +290,7 @@ blt(std::uint8_t rs1, std::uint8_t rs2, std::int32_t offset,
         return std::unexpected(ExecutionError::INSTRUCTION_ADDRESS_MISALIGNED);
     }
 
-    context.pc = target_address;
+    context.next_pc = target_address;
 
     return {};
 }
@@ -318,7 +318,7 @@ bge(std::uint8_t rs1, std::uint8_t rs2, std::int32_t offset,
         return std::unexpected(ExecutionError::INSTRUCTION_ADDRESS_MISALIGNED);
     }
 
-    context.pc = target_address;
+    context.next_pc = target_address;
 
     return {};
 }
@@ -341,7 +341,7 @@ jal(std::uint8_t rd, std::int32_t offset, ExecutionContext& context)
     const std::uint32_t return_address = context.pc + 4;
 
     context.registers.write(rd, return_address);
-    context.pc = target_address;
+    context.next_pc = target_address;
 
     return {};
 }
@@ -368,7 +368,7 @@ jalr(std::uint8_t rd, std::int32_t offset, std::uint8_t rs1,
     const std::uint32_t return_address = context.pc + 4;
 
     context.registers.write(rd, return_address);
-    context.pc = target_address;
+    context.next_pc = target_address;
 
     return {};
 }

@@ -14,7 +14,8 @@ namespace rv32i {
 struct ExecutionContext {
     RegisterFile& registers;
     Memory& memory;
-    std::uint32_t& pc;
+    std::uint32_t pc;
+    std::uint32_t next_pc;
 };
 
 [[nodiscard]]
