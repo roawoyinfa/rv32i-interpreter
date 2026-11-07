@@ -2,6 +2,7 @@
 #define CPU_H
 
 #include "execution_error.h"
+#include "program.h"
 #include "register_file.h"
 #include "memory.h"
 
@@ -10,24 +11,31 @@
 
 namespace rv32i {
 
+enum class CPUError {
+    PROGRAM_TOO_LARGE,
+    MEMORY_INITIALIZATION_FAILED
+};
+
 class CPU {
 public:
-    explicit CPU() noexcept;
+    [[nodiscard]]
+    static std::expected<CPU, CPUError> create(Program program) noexcept;
+
+    CPU() = default;
 
     CPU(const CPU&) = delete;
     CPU& operator=(const CPU&) = delete;
 
-    CPU(CPU&&) = delete;
+    CPU(CPU&&) noexcept = default;
     CPU& operator=(CPU&&) = delete;
 
     [[nodiscard]] std::expected<void, ExecutionError> run();
-
     [[nodiscard]] std::expected<void, ExecutionError> step();
 
 private:
     RegisterFile registers;
     Memory memory;
-    std::uint32_t pc;
+    std::uint32_t pc{};
 };
 
 }

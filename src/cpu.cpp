@@ -2,11 +2,37 @@
 #include "executor.h"
 #include "execution_error.h"
 #include "decoder.h"
+#include "program.h"
 #include "memory.h"
 
+#include <cstddef>
+#include <expected>
 #include <utility>
 
 namespace rv32i {
+
+std::expected<CPU, CPUError> CPU::create(Program program) noexcept
+{
+    CPU cpu{};
+
+    if (program.instructions.size() >
+        Memory::MEMORY_CAPACITY / sizeof(std::uint32_t)) {
+        return std::unexpected(CPUError::PROGRAM_TOO_LARGE);
+    }
+
+    for (std::size_t i = 0; i < program.instructions.size(); ++i) {
+        const std::uint32_t address = i * sizeof(std::uint32_t);
+
+        const auto result = cpu.memory.write_word(address,
+                                                  program.instructions[i]);
+
+        if (!result) {
+            return std::unexpected(CPUError::MEMORY_INITIALIZATION_FAILED);
+        }
+    }
+
+    return cpu;
+}
 
 std::expected<void, ExecutionError> CPU::step()
 {

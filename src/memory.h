@@ -22,7 +22,7 @@ public:
     Memory(const Memory&) = delete;
     Memory& operator=(const Memory&) = delete;
 
-    Memory(Memory&&) = delete;
+    Memory(Memory&&) noexcept = default;
     Memory& operator=(Memory&&) = delete;
 
     [[nodiscard]]

@@ -16,7 +16,7 @@ public:
     RegisterFile(const RegisterFile&) = delete;
     RegisterFile& operator=(const RegisterFile&) = delete;
 
-    RegisterFile(RegisterFile&&) = delete;
+    RegisterFile(RegisterFile&&) noexcept = default;
     RegisterFile& operator=(RegisterFile&&) = delete;
 
     [[nodiscard]] std::uint32_t read(std::size_t register_index) const noexcept;
