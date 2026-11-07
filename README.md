@@ -43,14 +43,17 @@ The interpreter supports the following 21 instruction mnemonics.
 
 ## Architecture
 
-The interpreter is organized around four primary responsibilities:
+The interpreter is organized around seven primary responsibilities:
 
-| Component   | Responsibility                                                                         |
-|---------------|--------------------------------------------------------------------------------------|
-| Machine State | Maintains the program counter and 32 integer registers, with `x0` hardwired to zero. |
-| Memory        | Provides byte-addressable, little-endian memory for instruction and data access.     |
-| Decoder       | Converts raw 32-bit instruction words into structured instruction representations.   |
-| Executor      | Implements instruction semantics and updates registers, memory, and control flow.    |
+| Component    | Responsibility                                                         |
+| ------------ | ---------------------------------------------------------------------- |
+| CPU          | Coordinates the fetch-decode-execute cycle and manages execution state |
+| Decoder      | Converts raw instruction words into structured representations         |
+| Executor     | Dispatches decoded instructions and implements their semantics         |
+| RegisterFile | Manages architectural registers                                        |
+| Memory       | Provides checked access to byte-addressable memory                     |
+| Loader       | Parses the program file and supplies machine-code words                |
+| `main()`     | Initializes the application and handles user-facing errors             |
 
 ## Input Format
 
