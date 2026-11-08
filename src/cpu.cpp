@@ -15,6 +15,9 @@ std::expected<CPU, CPUError> CPU::create(Program program) noexcept
 {
     CPU cpu{};
 
+    cpu.program_end = static_cast<std::uint32_t>(program.instructions.size() *
+                                                 sizeof(std::uint32_t));
+
     if (program.instructions.size() >
         Memory::MEMORY_CAPACITY / sizeof(std::uint32_t)) {
         return std::unexpected(CPUError::PROGRAM_TOO_LARGE);
@@ -36,6 +39,11 @@ std::expected<CPU, CPUError> CPU::create(Program program) noexcept
 
 std::expected<ExecutionOutcome, ExecutionError> CPU::step()
 {
+    if (pc >= program_end)
+    {
+        return std::unexpected(ExecutionError::EXECUTION_OUTSIDE_PROGRAM);
+    }
+
     const auto fetch_result = memory.read_word(pc);
 
     if (!fetch_result) {

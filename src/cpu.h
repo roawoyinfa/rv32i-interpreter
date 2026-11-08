@@ -37,6 +37,7 @@ private:
     RegisterFile registers;
     Memory memory;
     std::uint32_t pc{};
+    std::uint32_t program_end{};
 };
 
 }
