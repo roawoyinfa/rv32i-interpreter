@@ -14,6 +14,7 @@ enum class InstructionOperation {
     LW, SW, LB, SB,
     BEQ, BNE, BLT, BGE,
     JAL, JALR,
+    ECALL
 };
 
 struct DecodedInstruction {

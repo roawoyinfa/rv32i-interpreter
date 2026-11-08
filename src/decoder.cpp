@@ -343,6 +343,26 @@ decode(std::uint32_t instruction)
             };
         }
 
+        case 0x73: {
+            const std::uint8_t funct3 = (instruction >> 12) & 0x07;
+
+            const std::uint8_t rd = (instruction >> 7) & 0x1F;
+            const std::uint8_t rs1 = (instruction >> 15) & 0x1F;
+
+            const std::uint8_t immediate = (instruction >> 20);
+
+            if (funct3 != 0x00 ||
+                rd != 0x00 ||
+                rs1 != 0x00 ||
+                immediate != 0x00) {
+                return std::unexpected(DecoderError::INVALID_ENCODING);
+            }
+
+            return DecodedInstruction{
+                .operation = InstructionOperation::ECALL
+            };
+        }
+
         default:
             return std::unexpected(
                 DecoderError::UNSUPPORTED_INSTRUCTION);

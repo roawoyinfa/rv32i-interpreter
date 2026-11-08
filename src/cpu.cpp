@@ -34,7 +34,7 @@ std::expected<CPU, CPUError> CPU::create(Program program) noexcept
     return cpu;
 }
 
-std::expected<void, ExecutionError> CPU::step()
+std::expected<ExecutionOutcome, ExecutionError> CPU::step()
 {
     const auto fetch_result = memory.read_word(pc);
 
@@ -81,9 +81,14 @@ std::expected<void, ExecutionError> CPU::step()
         return std::unexpected(executor_result.error());
     }
 
+    const auto execution_outcome = executor_result.value();
+    if (execution_outcome == ExecutionOutcome::HALT) {
+        return ExecutionOutcome::HALT;
+    }
+
     pc = context.next_pc;
 
-    return {};
+    return ExecutionOutcome::CONTINUE;
 }
 
 std::expected<void, ExecutionError> CPU::run()
@@ -94,6 +99,12 @@ std::expected<void, ExecutionError> CPU::run()
         if (!result) {
             return std::unexpected(result.error());
         }
+
+        const auto execution_outcome = result.value();
+        if (execution_outcome == ExecutionOutcome::HALT) {
+            return {};
+        }
+
     }
 
     return {};

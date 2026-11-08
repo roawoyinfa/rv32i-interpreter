@@ -10,81 +10,106 @@
 namespace rv32i {
 namespace {
 
-void add(std::uint8_t rd, std::uint8_t rs1, std::uint8_t rs2,
-         ExecutionContext& context)
+[[nodiscard]]
+ExecutionOutcome add(std::uint8_t rd, std::uint8_t rs1, std::uint8_t rs2,
+                     ExecutionContext& context)
 {
     const std::uint32_t result = context.registers.read(rs1) +
         context.registers.read(rs2);
 
     context.registers.write(rd, result);
+
+    return ExecutionOutcome::CONTINUE;
 }
 
-void sub(std::uint8_t rd, std::uint8_t rs1, std::uint8_t rs2,
-         ExecutionContext& context)
+[[nodiscard]]
+ExecutionOutcome sub(std::uint8_t rd, std::uint8_t rs1, std::uint8_t rs2,
+                     ExecutionContext& context)
 {
     const std::uint32_t result = context.registers.read(rs1) -
         context.registers.read(rs2);
 
     context.registers.write(rd, result);
+
+    return ExecutionOutcome::CONTINUE;
 }
 
-void addi(std::uint8_t rd, std::uint8_t rs1, std::int32_t immediate,
-          ExecutionContext& context)
+[[nodiscard]]
+ExecutionOutcome addi(std::uint8_t rd, std::uint8_t rs1, std::int32_t immediate,
+                      ExecutionContext& context)
 {
     const std::uint32_t result = context.registers.read(rs1) +
         static_cast<std::uint32_t>(immediate);
 
     context.registers.write(rd, result);
+
+    return ExecutionOutcome::CONTINUE;
 }
 
-void and_(std::uint8_t rd, std::uint8_t rs1, std::uint8_t rs2,
-          ExecutionContext& context)
+[[nodiscard]]
+ExecutionOutcome and_(std::uint8_t rd, std::uint8_t rs1, std::uint8_t rs2,
+                      ExecutionContext& context)
 {
     const std::uint32_t result = context.registers.read(rs1) &
         context.registers.read(rs2);
 
     context.registers.write(rd, result);
+
+    return ExecutionOutcome::CONTINUE;
 }
 
-void or_(std::uint8_t rd, std::uint8_t rs1, std::uint8_t rs2,
-         ExecutionContext& context)
+[[nodiscard]]
+ExecutionOutcome or_(std::uint8_t rd, std::uint8_t rs1, std::uint8_t rs2,
+                     ExecutionContext& context)
 {
     const std::uint32_t result = context.registers.read(rs1) |
         context.registers.read(rs2);
 
     context.registers.write(rd, result);
+
+    return ExecutionOutcome::CONTINUE;
 }
 
-void xor_(std::uint8_t rd, std::uint8_t rs1, std::uint8_t rs2,
-          ExecutionContext& context)
+[[nodiscard]]
+ExecutionOutcome xor_(std::uint8_t rd, std::uint8_t rs1, std::uint8_t rs2,
+                      ExecutionContext& context)
 {
     const std::uint32_t result = context.registers.read(rs1) ^
         context.registers.read(rs2);
 
     context.registers.write(rd, result);
+
+    return ExecutionOutcome::CONTINUE;
 }
 
-void slt(std::uint8_t rd, std::uint8_t rs1, std::uint8_t rs2,
-         ExecutionContext& context)
+[[nodiscard]]
+ExecutionOutcome slt(std::uint8_t rd, std::uint8_t rs1, std::uint8_t rs2,
+                     ExecutionContext& context)
 {
     const auto lhs = static_cast<std::int32_t>(context.registers.read(rs1));
     const auto rhs = static_cast<std::int32_t>(context.registers.read(rs2));
 
     context.registers.write(rd, lhs < rhs ? 1 : 0);
+
+    return ExecutionOutcome::CONTINUE;
 }
 
-void sll(std::uint8_t rd, std::uint8_t rs1, std::uint8_t rs2,
-         ExecutionContext& context)
+[[nodiscard]]
+ExecutionOutcome sll(std::uint8_t rd, std::uint8_t rs1, std::uint8_t rs2,
+                     ExecutionContext& context)
 {
     const std::uint8_t low_5_bits = context.registers.read(rs2) & 0x0000001F;
 
     std::uint32_t result = context.registers.read(rs1) << low_5_bits;
 
     context.registers.write(rd, result);
+
+    return ExecutionOutcome::CONTINUE;
 }
 
-void srl(std::uint8_t rd, std::uint8_t rs1, std::uint8_t rs2,
-         ExecutionContext& context)
+[[nodiscard]]
+ExecutionOutcome srl(std::uint8_t rd, std::uint8_t rs1, std::uint8_t rs2,
+                     ExecutionContext& context)
 {
     const std::uint8_t shift_amount = context.registers.read(rs2) & 0x1F;
 
@@ -93,10 +118,13 @@ void srl(std::uint8_t rd, std::uint8_t rs1, std::uint8_t rs2,
     const std::uint32_t result = value >> shift_amount;
 
     context.registers.write(rd, result);
+
+    return ExecutionOutcome::CONTINUE;
 }
 
-void sra(std::uint8_t rd, std::uint8_t rs1, std::uint8_t rs2,
-         ExecutionContext& context)
+[[nodiscard]]
+ExecutionOutcome sra(std::uint8_t rd, std::uint8_t rs1, std::uint8_t rs2,
+                     ExecutionContext& context)
 {
     const std::uint8_t shift_amount = context.registers.read(rs2) & 0x1F;
 
@@ -106,15 +134,21 @@ void sra(std::uint8_t rd, std::uint8_t rs1, std::uint8_t rs2,
     const std::uint32_t result =  value >> shift_amount;
 
     context.registers.write(rd, result);
-}
 
-void lui(std::uint8_t rd, std::int32_t imm, ExecutionContext& context)
-{
-    context.registers.write(rd, static_cast<std::uint32_t>(imm));
+    return ExecutionOutcome::CONTINUE;
 }
 
 [[nodiscard]]
-std::expected<void, ExecutionError>
+ExecutionOutcome lui(std::uint8_t rd, std::int32_t imm,
+                     ExecutionContext& context)
+{
+    context.registers.write(rd, static_cast<std::uint32_t>(imm));
+
+    return ExecutionOutcome::CONTINUE;
+}
+
+[[nodiscard]]
+std::expected<ExecutionOutcome, ExecutionError>
 lw(std::uint8_t rd, std::int32_t offset, std::uint8_t rs1,
    ExecutionContext& context)
 {
@@ -138,11 +172,11 @@ lw(std::uint8_t rd, std::int32_t offset, std::uint8_t rs1,
 
     context.registers.write(rd, result.value());
 
-    return {};
+    return ExecutionOutcome::CONTINUE;
 }
 
 [[nodiscard]]
-std::expected<void, ExecutionError>
+std::expected<ExecutionOutcome, ExecutionError>
 sw(std::uint8_t rs2, std::int32_t offset, std::uint8_t rs1,
    ExecutionContext& context)
 {
@@ -166,11 +200,11 @@ sw(std::uint8_t rs2, std::int32_t offset, std::uint8_t rs1,
         }
     }
 
-    return {};
+    return ExecutionOutcome::CONTINUE;
 }
 
 [[nodiscard]]
-std::expected<void, ExecutionError>
+std::expected<ExecutionOutcome, ExecutionError>
 lb(std::uint8_t rd, std::int32_t offset, std::uint8_t rs1,
    ExecutionContext& context)
 {
@@ -188,11 +222,11 @@ lb(std::uint8_t rd, std::int32_t offset, std::uint8_t rs1,
 
     context.registers.write(rd, static_cast<std::uint32_t>(value));
 
-    return {};
+    return ExecutionOutcome::CONTINUE;
 }
 
 [[nodiscard]]
-std::expected<void, ExecutionError>
+std::expected<ExecutionOutcome, ExecutionError>
 sb(std::uint8_t rs2, std::int32_t offset, std::uint8_t rs1,
    ExecutionContext& context)
 {
@@ -208,11 +242,11 @@ sb(std::uint8_t rs2, std::int32_t offset, std::uint8_t rs1,
         return std::unexpected(ExecutionError::MEMORY_ACCESS_OUT_OF_BOUNDS);
     }
 
-    return {};
+    return ExecutionOutcome::CONTINUE;
 }
 
 [[nodiscard]]
-std::expected<void, ExecutionError>
+std::expected<ExecutionOutcome, ExecutionError>
 beq(std::uint8_t rs1, std::uint8_t rs2, std::int32_t offset,
     ExecutionContext& context)
 {
@@ -236,11 +270,11 @@ beq(std::uint8_t rs1, std::uint8_t rs2, std::int32_t offset,
 
     context.next_pc = target_address;
 
-    return {};
+    return ExecutionOutcome::CONTINUE;
 }
 
 [[nodiscard]]
-std::expected<void, ExecutionError>
+std::expected<ExecutionOutcome, ExecutionError>
 bne(std::uint8_t rs1, std::uint8_t rs2, std::int32_t offset,
     ExecutionContext& context)
 {
@@ -264,11 +298,11 @@ bne(std::uint8_t rs1, std::uint8_t rs2, std::int32_t offset,
 
     context.next_pc = target_address;
 
-    return {};
+    return ExecutionOutcome::CONTINUE;
 }
 
 [[nodiscard]]
-std::expected<void, ExecutionError>
+std::expected<ExecutionOutcome, ExecutionError>
 blt(std::uint8_t rs1, std::uint8_t rs2, std::int32_t offset,
     ExecutionContext& context)
 {
@@ -292,11 +326,11 @@ blt(std::uint8_t rs1, std::uint8_t rs2, std::int32_t offset,
 
     context.next_pc = target_address;
 
-    return {};
+    return ExecutionOutcome::CONTINUE;
 }
 
 [[nodiscard]]
-std::expected<void, ExecutionError>
+std::expected<ExecutionOutcome, ExecutionError>
 bge(std::uint8_t rs1, std::uint8_t rs2, std::int32_t offset,
     ExecutionContext& context)
 {
@@ -320,11 +354,11 @@ bge(std::uint8_t rs1, std::uint8_t rs2, std::int32_t offset,
 
     context.next_pc = target_address;
 
-    return {};
+    return ExecutionOutcome::CONTINUE;
 }
 
 [[nodiscard]]
-std::expected<void, ExecutionError>
+std::expected<ExecutionOutcome, ExecutionError>
 jal(std::uint8_t rd, std::int32_t offset, ExecutionContext& context)
 {
     const std::uint32_t target_address = context.pc + offset;
@@ -343,11 +377,11 @@ jal(std::uint8_t rd, std::int32_t offset, ExecutionContext& context)
     context.registers.write(rd, return_address);
     context.next_pc = target_address;
 
-    return {};
+    return ExecutionOutcome::CONTINUE;
 }
 
 [[nodiscard]]
-std::expected<void, ExecutionError>
+std::expected<ExecutionOutcome, ExecutionError>
 jalr(std::uint8_t rd, std::int32_t offset, std::uint8_t rs1,
      ExecutionContext& context)
 {
@@ -370,58 +404,62 @@ jalr(std::uint8_t rd, std::int32_t offset, std::uint8_t rs1,
     context.registers.write(rd, return_address);
     context.next_pc = target_address;
 
-    return {};
+    return ExecutionOutcome::CONTINUE;
+}
+
+[[nodiscard]] ExecutionOutcome ecall()
+{
+    return ExecutionOutcome::HALT;
 }
 
 }
 
-std::expected<void, ExecutionError>
+std::expected<ExecutionOutcome, ExecutionError>
 execute(const DecodedInstruction& instruction, ExecutionContext& context)
 {
     switch (instruction.operation) {
         case InstructionOperation::ADD:
-            add(instruction.rd, instruction.rs1, instruction.rs2, context);
-            return {};
+            return add(instruction.rd, instruction.rs1, instruction.rs2,
+                       context);
 
         case InstructionOperation::SUB:
-            sub(instruction.rd, instruction.rs1, instruction.rs2, context);
-            return {};
+            return sub(instruction.rd, instruction.rs1, instruction.rs2,
+                       context);
 
         case InstructionOperation::ADDI:
-            addi(instruction.rd, instruction.rs1, instruction.immediate, context);
-            return {};
+            return addi(instruction.rd, instruction.rs1, instruction.immediate,
+                        context);
 
         case InstructionOperation::AND:
-            and_(instruction.rd, instruction.rs1, instruction.rs2, context);
-            return {};
+            return and_(instruction.rd, instruction.rs1, instruction.rs2,
+                        context);
 
         case InstructionOperation::OR:
-            or_(instruction.rd, instruction.rs1, instruction.rs2, context);
-            return {};
+            return or_(instruction.rd, instruction.rs1, instruction.rs2,
+                       context);
 
         case InstructionOperation::XOR:
-            xor_(instruction.rd, instruction.rs1, instruction.rs2, context);
-            return {};
+            return xor_(instruction.rd, instruction.rs1, instruction.rs2,
+                        context);
 
         case InstructionOperation::SLT:
-            slt(instruction.rd, instruction.rs1, instruction.rs2, context);
-            return {};
+            return slt(instruction.rd, instruction.rs1, instruction.rs2,
+                       context);
 
         case InstructionOperation::SLL:
-            sll(instruction.rd, instruction.rs1, instruction.rs2, context);
-            return {};
+            return sll(instruction.rd, instruction.rs1, instruction.rs2,
+                       context);
 
         case InstructionOperation::SRL:
-            srl(instruction.rd, instruction.rs1, instruction.rs2, context);
-            return {};
+            return srl(instruction.rd, instruction.rs1, instruction.rs2,
+                       context);
 
         case InstructionOperation::SRA:
-            sra(instruction.rd, instruction.rs1, instruction.rs2, context);
-            return {};
+            return sra(instruction.rd, instruction.rs1, instruction.rs2,
+                       context);
 
         case InstructionOperation::LUI:
-            lui(instruction.rd, instruction.immediate, context);
-            return {};
+            return lui(instruction.rd, instruction.immediate, context);
 
         case InstructionOperation::LW:
             return lw(instruction.rd, instruction.immediate, instruction.rs1,
@@ -461,6 +499,9 @@ execute(const DecodedInstruction& instruction, ExecutionContext& context)
         case InstructionOperation::JALR:
             return jalr(instruction.rd, instruction.immediate, instruction.rs1,
                         context);
+
+        case InstructionOperation::ECALL:
+            return ecall();
     }
 }
 

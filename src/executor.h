@@ -18,8 +18,13 @@ struct ExecutionContext {
     std::uint32_t next_pc;
 };
 
+enum class ExecutionOutcome {
+    CONTINUE,
+    HALT
+};
+
 [[nodiscard]]
-std::expected<void, ExecutionError>
+std::expected<ExecutionOutcome, ExecutionError>
 execute(const DecodedInstruction& instruction, ExecutionContext& context);
 
 }

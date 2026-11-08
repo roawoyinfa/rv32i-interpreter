@@ -2,6 +2,7 @@
 #define CPU_H
 
 #include "execution_error.h"
+#include "executor.h"
 #include "program.h"
 #include "register_file.h"
 #include "memory.h"
@@ -30,7 +31,7 @@ public:
     CPU& operator=(CPU&&) = delete;
 
     [[nodiscard]] std::expected<void, ExecutionError> run();
-    [[nodiscard]] std::expected<void, ExecutionError> step();
+    [[nodiscard]] std::expected<ExecutionOutcome, ExecutionError> step();
 
 private:
     RegisterFile registers;
