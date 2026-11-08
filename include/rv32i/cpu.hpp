@@ -1,11 +1,12 @@
 #ifndef CPU_H
 #define CPU_H
 
-#include "execution_error.h"
-#include "executor.h"
-#include "program.h"
-#include "register_file.h"
-#include "memory.h"
+#include "rv32i/execution_error.hpp"
+#include "rv32i/execution_outcome.hpp"
+#include "rv32i/executor.hpp"
+#include "rv32i/program.hpp"
+#include "rv32i/register_file.hpp"
+#include "rv32i/memory.hpp"
 
 #include <cstdint>
 #include <expected>

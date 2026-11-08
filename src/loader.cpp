@@ -1,5 +1,5 @@
-#include "loader.h"
-#include "program.h"
+#include "rv32i/loader.hpp"
+#include "rv32i/program.hpp"
 
 #include <algorithm>
 #include <cctype>

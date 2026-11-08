@@ -1,9 +1,9 @@
-#include "cpu.h"
-#include "executor.h"
-#include "execution_error.h"
-#include "decoder.h"
-#include "program.h"
-#include "memory.h"
+#include "rv32i/cpu.hpp"
+#include "rv32i/executor.hpp"
+#include "rv32i/execution_error.hpp"
+#include "rv32i/decoder.hpp"
+#include "rv32i/program.hpp"
+#include "rv32i/memory.hpp"
 
 #include <cstddef>
 #include <expected>

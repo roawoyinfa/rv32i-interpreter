@@ -1,4 +1,4 @@
-#include "memory.h"
+#include "rv32i/memory.hpp"
 
 #include <cstdint>
 #include <expected>

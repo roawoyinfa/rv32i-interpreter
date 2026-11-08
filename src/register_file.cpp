@@ -1,4 +1,4 @@
-#include "register_file.h"
+#include "rv32i/register_file.hpp"
 
 #include <cassert>
 #include <cstddef>

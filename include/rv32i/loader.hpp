@@ -4,7 +4,7 @@
 #include <expected>
 #include <filesystem>
 
-#include "program.h"
+#include "rv32i/program.hpp"
 
 namespace rv32i {
 

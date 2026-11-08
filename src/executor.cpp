@@ -1,7 +1,7 @@
-#include "executor.h"
-#include "execution_error.h"
-#include "instruction.h"
-#include "memory.h"
+#include "rv32i/executor.hpp"
+#include "rv32i/execution_error.hpp"
+#include "rv32i/instruction.hpp"
+#include "rv32i/memory.hpp"
 
 #include <cassert>
 #include <cstdint>

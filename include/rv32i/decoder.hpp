@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <expected>
 
-#include "instruction.h"
+#include "rv32i/instruction.hpp"
 
 namespace rv32i {
 

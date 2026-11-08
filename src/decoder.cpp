@@ -1,5 +1,5 @@
-#include "decoder.h"
-#include "instruction.h"
+#include "rv32i/decoder.hpp"
+#include "rv32i/instruction.hpp"
 
 #include <cstdint>
 #include <expected>
