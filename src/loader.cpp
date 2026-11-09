@@ -74,7 +74,7 @@ load_program(const std::filesystem::path& path)
                                                instruction, 16);
 
         if (ec != std::errc{} || ptr != line.data() + line.size()) {
-            return std:unexpected(LoaderError::PARSING_ERROR);
+            return std::unexpected(LoaderError::PARSING_ERROR);
         }
 
         program.instructions.push_back(instruction);

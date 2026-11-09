@@ -20,16 +20,16 @@ enum class InstructionOperation {
 struct DecodedInstruction {
     InstructionOperation operation;
 
-    std::uint8_t opcode;
+    std::uint8_t opcode{};
 
-    uint8_t rs1;
-    uint8_t rs2;
-    uint8_t rd;
+    uint8_t rs1{};
+    uint8_t rs2{};
+    uint8_t rd{};
 
-    uint8_t funct3;
-    uint8_t funct7;
+    uint8_t funct3{};
+    uint8_t funct7{};
 
-    int32_t immediate;
+    int32_t immediate{};
 };
 
 }

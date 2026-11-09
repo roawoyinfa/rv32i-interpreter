@@ -6,6 +6,7 @@
 #include <cassert>
 #include <cstdint>
 #include <expected>
+#include <utility>
 
 namespace rv32i {
 namespace {
@@ -503,6 +504,8 @@ execute(const DecodedInstruction& instruction, ExecutionContext& context)
         case InstructionOperation::ECALL:
             return ecall();
     }
+
+    std::unreachable();
 }
 
 }

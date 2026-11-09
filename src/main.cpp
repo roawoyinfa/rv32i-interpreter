@@ -1,5 +1,6 @@
-#include "rv32i/cpu.h"
-#include "rv32i/loader.h"
+#include "rv32i/cpu.hpp"
+#include "rv32i/execution_error.hpp"
+#include "rv32i/loader.hpp"
 
 #include <cstdlib>
 #include <filesystem>
@@ -9,14 +10,14 @@
 int main(int argc, char* argv[])
 {
     if (argc != 2) {
-        std::cerr << "Usage: " << argv[0] << "<program.hex>\n";
+        std::cerr << "Usage: " << argv[0] << " <program.hex>\n";
         return EXIT_FAILURE;
     }
 
     const std::filesystem::path path{argv[1]};
 
     if (path.empty()) {
-        std::cout << "Error: input file path cannot be empty.\n";
+        std::cerr << "Error: input file path cannot be empty.\n";
         return EXIT_FAILURE;
     }
 
@@ -52,7 +53,7 @@ int main(int argc, char* argv[])
         std::unreachable();
     }
 
-    const auto cpu_result = CPU::create(std::move(load_result).value());
+    auto cpu_result = rv32i::CPU::create(std::move(load_result).value());
 
     if (!cpu_result) {
         switch (cpu_result.error()) {
@@ -68,7 +69,7 @@ int main(int argc, char* argv[])
         std::unreachable();
     }
 
-    const auto cpu = std::move(cpu_result).value();
+    auto cpu = std::move(cpu_result).value();
 
     const auto run_result = cpu.run();
 
@@ -104,10 +105,9 @@ int main(int argc, char* argv[])
                 std::cerr << "Execution error: control flow left the loaded "
                           << "program region.\n";
                 return EXIT_FAILURE;
-            }
-
-            std::unreachable();
         }
+
+        std::unreachable();
     }
 
     std::cout << "Program terminated successfully\n";

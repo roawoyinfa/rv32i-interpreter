@@ -1,6 +1,8 @@
 #ifndef EXECUTION_ERROR_H
 #define EXECUTION_ERROR_H
 
+namespace rv32i {
+
 enum class ExecutionError {
     MEMORY_ACCESS_OUT_OF_BOUNDS,
     MEMORY_ACCESS_MISALIGNED,
@@ -10,6 +12,8 @@ enum class ExecutionError {
     INVALID_INSTRUCTION,
     EXECUTION_OUTSIDE_PROGRAM
 };
+
+}
 
 #endif
 
