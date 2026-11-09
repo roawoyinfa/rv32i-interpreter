@@ -82,7 +82,7 @@ implementation of a RISC-V processor.
 
 | Document                           | Purpose                                                    |
 |------------------------------------|------------------------------------------------------------|
-| [`INVARIANTS.md`](./INVARIANTS.md) | Correctness properties that the interpreter must preserve. |
+| [`INVARIANTS.md`](./docs/INVARIANTS.md) | Correctness properties that the interpreter must preserve. |
 
 ## License
 
