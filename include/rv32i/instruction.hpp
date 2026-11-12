@@ -1,5 +1,5 @@
-#ifndef INSTRUCTION_H
-#define INSTRUCTION_H
+#ifndef RV32I_INSTRUCTION_HPP
+#define RV32I_INSTRUCTION_HPP
 
 #include <cstdint>
 

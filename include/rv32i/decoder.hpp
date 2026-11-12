@@ -1,5 +1,5 @@
-#ifndef DECODER_H
-#define DECODER_H
+#ifndef RV32I_DECODER_HPP
+#define RV32I_DECODER_HPP
 
 #include <cstdint>
 #include <expected>

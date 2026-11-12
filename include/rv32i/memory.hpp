@@ -1,5 +1,5 @@
-#ifndef MEMORY_H
-#define MEMORY_H
+#ifndef RV32I_MEMORY_HPP
+#define RV32I_MEMORY_HPP
 
 #include <array>
 #include <cstddef>

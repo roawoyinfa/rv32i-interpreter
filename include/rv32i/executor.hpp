@@ -1,5 +1,5 @@
-#ifndef EXECUTOR_H
-#define EXECUTOR_H
+#ifndef RV32I_EXECUTOR_HPP
+#define RV32I_EXECUTOR_HPP
 
 #include <cstdint>
 #include <expected>

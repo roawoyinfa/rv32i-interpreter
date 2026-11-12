@@ -1,5 +1,5 @@
-#ifndef CPU_H
-#define CPU_H
+#ifndef RV32I_CPU_HPP
+#define RV32I_CPU_HPP
 
 #include "rv32i/execution_error.hpp"
 #include "rv32i/execution_outcome.hpp"

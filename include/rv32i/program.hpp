@@ -1,5 +1,5 @@
-#ifndef PROGRAM_H
-#define PROGRAM_H
+#ifndef RV32I_PROGRAM_HPP
+#define RV32I_PROGRAM_HPP
 
 #include <cstdint>
 #include <vector>

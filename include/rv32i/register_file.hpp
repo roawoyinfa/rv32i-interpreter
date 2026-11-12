@@ -1,5 +1,5 @@
-#ifndef REGISTER_FILE_H
-#define REGISTER_FILE_H
+#ifndef RV32I_REGISTER_FILE_HPP
+#define RV32I_REGISTER_FILE_HPP
 
 #include <array>
 #include <cstddef>

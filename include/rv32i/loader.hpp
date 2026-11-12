@@ -1,5 +1,5 @@
-#ifndef LOADER_H
-#define LOADER_H
+#ifndef RV32I_LOADER_HPP
+#define RV32I_LOADER_HPP
 
 #include <expected>
 #include <filesystem>

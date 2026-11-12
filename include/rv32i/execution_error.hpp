@@ -1,5 +1,5 @@
-#ifndef EXECUTION_ERROR_H
-#define EXECUTION_ERROR_H
+#ifndef RV32I_EXECUTION_ERROR_HPP
+#define RV32I_EXECUTION_ERROR_HPP
 
 namespace rv32i {
 
