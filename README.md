@@ -61,6 +61,31 @@ The interpreter loads raw 32-bit machine-code words rather than assembly-
 language instructions. The decoder extracts the instruction fields and
 produces a structured representation that the executor can consume.
 
+## Testing and Validation
+
+This project uses integration tests to validate instruction execution and
+overall program behaviour. Each test loads and executes a machine-code
+program, then checks the resulting CPU state.
+
+The integration tests cover:
+
+| Test       | Purpose                                                                 |
+|------------|-------------------------------------------------------------------------|
+| Arithmetic | Validate integer arithmetic and register updates.                       |
+| Shifts     | Validate logical and arithmetic shift operations.                       |
+| Memory     | Validate load/store operations and memory access behaviour.             |
+| Branches   | Validate conditional branching and control flow.                        |
+| Jumps      | Validate `jal`, `jalr`, and return-address calculation.                 |
+| Loop sum   | Validate repeated execution, loop termination, and accumulated results. |
+
+The tests verify expected architectural state, including register values and
+memory contents where applicable.
+
+## Requirements
+
+- GCC with C++23 support.
+- GNU Make.
+
 ## Design Constraints
 
 The project deliberately excludes functionality beyond the specified instruction
