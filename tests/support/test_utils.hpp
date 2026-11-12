@@ -4,7 +4,6 @@
 #include "rv32i/cpu.hpp"
 #include "rv32i/execution_error.hpp"
 #include "rv32i/loader.hpp"
-#include "rv32i/memory.hpp"
 
 #include <cstddef>
 #include <cstdint>

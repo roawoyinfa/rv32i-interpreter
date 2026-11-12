@@ -3,7 +3,6 @@
 
 #include "rv32i/execution_error.hpp"
 #include "rv32i/execution_outcome.hpp"
-#include "rv32i/executor.hpp"
 #include "rv32i/program.hpp"
 #include "rv32i/register_file.hpp"
 #include "rv32i/memory.hpp"
