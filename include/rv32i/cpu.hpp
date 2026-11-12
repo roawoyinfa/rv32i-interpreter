@@ -8,6 +8,7 @@
 #include "rv32i/register_file.hpp"
 #include "rv32i/memory.hpp"
 
+#include <cstddef>
 #include <cstdint>
 #include <expected>
 
@@ -31,8 +32,17 @@ public:
     CPU(CPU&&) noexcept = default;
     CPU& operator=(CPU&&) = delete;
 
-    [[nodiscard]] std::expected<void, ExecutionError> run();
-    [[nodiscard]] std::expected<ExecutionOutcome, ExecutionError> step();
+    [[nodiscard]] std::expected<void, ExecutionError> run() noexcept;
+
+    [[nodiscard]]
+    std::expected<ExecutionOutcome, ExecutionError> step() noexcept;
+
+    [[nodiscard]]
+    std::uint32_t read_register(std::size_t register_index) const noexcept;
+
+    [[nodiscard]]
+    std::expected<std::uint8_t, MemoryError>
+    read_memory(std::uint32_t address) const noexcept;
 
 private:
     RegisterFile registers;

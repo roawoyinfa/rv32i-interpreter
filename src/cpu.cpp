@@ -37,7 +37,7 @@ std::expected<CPU, CPUError> CPU::create(Program program) noexcept
     return cpu;
 }
 
-std::expected<ExecutionOutcome, ExecutionError> CPU::step()
+std::expected<ExecutionOutcome, ExecutionError> CPU::step() noexcept
 {
     if (pc >= program_end)
     {
@@ -99,7 +99,7 @@ std::expected<ExecutionOutcome, ExecutionError> CPU::step()
     return ExecutionOutcome::CONTINUE;
 }
 
-std::expected<void, ExecutionError> CPU::run()
+std::expected<void, ExecutionError> CPU::run() noexcept
 {
     while (true) {
         const auto result = step();
@@ -116,6 +116,17 @@ std::expected<void, ExecutionError> CPU::run()
     }
 
     return {};
+}
+
+std::uint32_t CPU::read_register(std::size_t register_index) const noexcept
+{
+    return registers.read(register_index);
+}
+
+std::expected<std::uint8_t, MemoryError>
+CPU::read_memory(std::uint32_t address) const noexcept
+{
+    return memory.read_byte(address);
 }
 
 }
