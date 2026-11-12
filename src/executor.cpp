@@ -307,10 +307,12 @@ std::expected<ExecutionOutcome, ExecutionError>
 blt(std::uint8_t rs1, std::uint8_t rs2, std::int32_t offset,
     ExecutionContext& context)
 {
-    const std::uint32_t lhs = context.registers.read(rs1);
-    const std::uint32_t rhs = context.registers.read(rs2);
+    const std::int32_t lhs =
+        static_cast<std::int32_t>(context.registers.read(rs1));
+    const std::int32_t rhs =
+        static_cast<std::int32_t>(context.registers.read(rs2));
 
-    if (lhs < rhs) {
+    if (lhs >= rhs) {
         return {};
     }
 
@@ -335,10 +337,12 @@ std::expected<ExecutionOutcome, ExecutionError>
 bge(std::uint8_t rs1, std::uint8_t rs2, std::int32_t offset,
     ExecutionContext& context)
 {
-    const std::uint32_t lhs = context.registers.read(rs1);
-    const std::uint32_t rhs = context.registers.read(rs2);
+    const std::int32_t lhs =
+        static_cast<std::int32_t>(context.registers.read(rs1));
+    const std::int32_t rhs =
+        static_cast<std::int32_t>(context.registers.read(rs2));
 
-    if (lhs >= rhs) {
+    if (lhs < rhs) {
         return {};
     }
 
