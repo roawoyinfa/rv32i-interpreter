@@ -86,6 +86,38 @@ memory contents where applicable.
 - GCC with C++23 support.
 - GNU Make.
 
+## Build, Run, and Test
+
+### Build
+
+Compile the project using GNU Make:
+
+```bash
+make
+```
+
+### Run
+
+Execute the interpreter with a machine-code program:
+
+```bash
+./build/rv32i-interpreter path/to/program.hex
+```
+
+Replace the path with the location of your `.hex` program.
+
+### Test
+
+Build and run the integration tests:
+
+```bash
+make test
+```
+
+The integration tests execute predefined machine-code programs and verify the
+resulting CPU state, including register values and memory contents where
+applicable.
+
 ## Design Constraints
 
 The project deliberately excludes functionality beyond the specified instruction
