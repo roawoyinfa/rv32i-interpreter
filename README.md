@@ -137,9 +137,10 @@ implementation of a RISC-V processor.
 
 ## Documentation
 
-| Document                           | Purpose                                                    |
-|------------------------------------|------------------------------------------------------------|
-| [`INVARIANTS.md`](./docs/INVARIANTS.md) | Correctness properties that the interpreter must preserve. |
+| Document                                                   | Purpose                                                    |
+|------------------------------------------------------------|------------------------------------------------------------|
+| [`INVARIANTS.md`](./docs/INVARIANTS.md)                    | Correctness properties that the interpreter must preserve. |
+| [`ARCHITECTURE_NOTES.md`](./docs/ARCHITECTURE_NOTES.md.md) | Interpreter's scope, instruction encodings, machine model, implementation decisions, and the architectural semantics.  |
 
 ## License
 
