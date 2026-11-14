@@ -195,3 +195,122 @@ set to zero. The immediate is reconstructed from the instruction fields,
 interpreted as a two's complement signed integer, sign-extended to 32 bits, and
 added to the current PC.
 
+## 3. Machine Model and Structure
+
+### 3.1 Architectural state
+
+The interpreter models the architectural state of a RISC-V RV32I processor using
+three components: a program counter (PC), a general-purpose register file, and
+byte-addressable memory. Together, these components represent the machine state
+that instructions operate on.
+
+| Component            | Description                                                                                        |
+| ---------------------| ---------------------------------------------------------------------------------------------------|
+| Program Counter (PC) | A 32-bit value that holds the address of the current instruction being executed.                   |
+| Register file        | Contains 32 general-purpose registers, x0 through x31, each 32 bits wide. x0 is hardwired to zero. |
+| Memory               | Byte-addressable storage using little-endian byte ordering.                                        |
+
+### 3.2 Memory model
+
+Memory is represented as an array of bytes, with each element holding a 8-bit
+value. Each byte occupies a distinct address, allowing instructions to access
+memory at byte granularity.
+
+The interpreter uses little-endian byte ordering, meaning that the least
+significant byte of a multi-byte value is stored at the lowest memory address.
+Consequently, a 32-bit word occupies four consecutive memory locations, with
+its bytes arranged from least significant to most significant.
+
+The load and store instructions operate on this byte-addressable memory:
+
+- `lw` reads four consecutive bytes and combines them into a 32-bit value.
+- `lb` reads a single byte and sign-extends it to 32 bits.
+- `sw` writes the four bytes of a 32-bit register value into consecutive memory
+  locations.
+- `sb` writes only the least significant byte of a register into memory.
+
+Memory accesses use an effective address calculated from the base register and
+the instruction's sign-extended immediate offset. The alignment requirements
+and handling of misaligned accesses are documented separately in section 4.2.
+
+### 3.3 Program format and loading
+
+The interpreter accepts programs as text files containing hexadecimal
+machine-code words. Each line contains one 32-bit hexadecimal word representing
+a single instruction.
+
+Instructions are loaded sequentially into memory, beginning at the start of the
+memory region. Each instruction occupies four bytes. The program counter is
+initialised to the beginning of memory, allowing execution to start from the
+first loaded instruction.
+
+The interpreter therefore operates directly on machine-code words rather than
+assembly source code.
+
+### 3.4 Interpreter structure
+
+The interpreter separates instruction decoding from instruction execution into
+two distinct stages.
+
+#### Decoder stage
+
+The decode stage receives a raw 32-bit machine instruction and extracts its
+constituent fields, including the opcode, register indices, function fields,
+and immediate value. These fields are interpreted to identify the corresponding
+instruction operation and are assembled into a structured representation.
+
+#### Executor stage
+
+The execute stage receives the decoded instruction and dispatches execution
+according to its identified operation. It implements the semantics of the
+supported instructions, performing the required arithmetic, logical, memory,
+or control-flow operations and updating the architectural state accordingly.
+
+The interface between the two stages is the `DecodedInstruction` structure. It
+stores the identified operation alongside the extracted instruction fields and
+the decoded immediate.
+
+Separating decoding from execution keeps instruction interpretation independent
+of instruction behaviour. This makes the decoder easier to test independently and
+allows the execution stage to operate on a consistent instruction representation
+rather than repeatedly extracting fields from the raw machine word.
+
+### 3.5 Trace format
+
+The interpreter produces a trace entry for each instruction executed. Each entry
+begins with the instruction's program counter (PC), its raw 32-bit machine-code
+word (WORD), and its decoded mnemonic (MNEMONIC).
+
+Additional trace lines record the effects of the instruction on the
+architectural state:
+
+- Register updates: When an instruction modifies a register, the trace records
+  the destination register and its value before and after execution.
+- Memory updates: When an instruction writes to memory, the trace records each
+  affected memory address and the byte value before and after the write.
+- Halt message: When the ECALL instruction is encountered, the trace records a
+  halt message indicating that the simulator has stopped execution.
+
+This trace format makes it possible to follow instruction execution and observe
+changes to the machine state.
+
+The following excerpt shows the trace format produced by the memory integration
+test:
+
+```text
+[TRACE] PC=0x0000000C WORD=0x00152023 MNEMONIC=SW
+        MEM [0x00000100]: 0x00 -> 0x78
+        MEM [0x00000101]: 0x00 -> 0x56
+        MEM [0x00000102]: 0x00 -> 0x34
+        MEM [0x00000103]: 0x00 -> 0x12
+
+[TRACE] PC=0x00000010 WORD=0x00052103 MNEMONIC=LW
+        REG x2: 0x00000000 -> 0x12345678
+
+[TRACE] PC=0x00000024 WORD=0x00450303 MNEMONIC=LB
+        REG x6: 0x00000000 -> 0xFFFFFF80
+
+[TRACE] PC=0x0000002C WORD=0x00000073 MNEMONIC=ECALL
+        HALT: Simulator halt
+```
+
