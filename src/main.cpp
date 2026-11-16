@@ -21,6 +21,20 @@ int main(int argc, char* argv[])
         return EXIT_FAILURE;
     }
 
+    std::error_code ec;
+    const bool exists = std::filesystem::exists(path, ec);
+
+    if (ec) {
+        std::cerr << "Filesystem error: " << ec.message() << '\n';
+        return EXIT_FAILURE;
+    }
+
+    if (!exists) {
+        std::cerr << "Error: input file does not exist: "
+                  << std::filesystem::absolute(path) << '\n';
+        return EXIT_FAILURE;
+    }
+
     const auto load_result = rv32i::load_program(path);
 
     if (!load_result) {
