@@ -314,3 +314,467 @@ test:
         HALT: Simulator halt
 ```
 
+## 4. Declared Design Decisions
+
+### 4.1 Halt convention
+
+#### Context
+
+The interpreter requires a defined mechanism for terminating program execution.
+Since RISC-V does not define an explicit termination command, the processor
+simulator would need to rely on an external condition.
+
+#### Decision
+
+The interpreter uses the `ECALL` instruction as a project-specific halt condition.
+
+#### Alternatives considered
+
+Tracking the program boundary and terminating execution when program counter
+reaches the end of the loaded program.
+
+#### Rationale
+
+Using `ECALL` provides an explicit termination instruction within the program
+itself. This makes program termination predictable.
+
+### 4.2 Misaligned-access policy
+
+#### Context
+
+Memory instructions access data of different widths. A word access (`LW`, `SW`)
+requires a four-byte aligned effective address to be naturaly aligned, whereas a
+byte (`LB`, `SW`) has no additional alignment requirement.
+
+The RISC-V specification leaves the behavior misaligned accesses to the
+execution environment.
+
+#### Decision
+
+The interpreter reports an error when a memory instruction attempts a misaligned
+access.
+
+#### Alternatives considered
+
+Allow misaligned accesses to complete successfully.
+
+#### Rationale
+
+Rejecting misaligned accesses provides an explicit memory-access policy.
+
+### 4.3 Endianness
+
+#### Context
+
+Multi-byte values occupy a contiguous sequence of bytes. These bytes must
+be ordered within the sequence. Endianness determines the order of inidividual
+bytes within a multi-byte value.
+
+#### Decision
+
+The interpreter uses little-endian ordering.
+
+#### Alternatives considered
+
+Big-endian is another byte ordering convention.
+
+#### Rationale
+
+Preserves the byte-ordering semantics of the RISC-V RV32I architecture.
+
+### 4.4 Unsupported or invalid instructions
+
+#### Context
+
+The interpreter only implements a defined subset of the RV32I instruction set.
+During decoding, it may encounter instruction encoding that is invalid or that
+is not implemented by the interpreter. 
+
+#### Decision
+
+The interpreter reports an appropriate error when it encounters an invalid
+instruction encoding or an unsupported instruction operation.
+
+#### Rationale
+
+Reporting an error prevents invalid or unsupported instructions from being
+executed as though they were valid.
+
+## 5. Semantics I Had to Get Right
+
+### 5.1 x0 behavior
+
+#### Rule
+
+The RISC-V register `x0` is hardwired to zero: reading `x0` always return zero,
+and writes to it have no effect.
+
+#### Why it is easy to get wrong
+
+The register file contains 32 general-purpose registers, which may lead to the
+assumption that all 32 registers behave identically.
+
+#### Implementation
+
+[`RegisterFile`](../src/register_file.cpp) enfoces this behavior in its read
+and write operations
+
+### 5.2 32-bit wraparound
+
+#### rule
+
+RV32I registers hold 32-bit values. Arithmetic results written to a register are
+therefore limited to 32 bits. Overflow wraps around modulo $2^32$.
+
+#### Why it is easy to get wrong
+
+A host programming language may use integer types wider than 32 bits. If the
+interpreter does not enforce the 32-bit result width, arithmetic operations may
+produce values that cannot be represented in an RV32I register.
+
+This can cause subsequent instructions to operate on incorrect values.
+
+#### Implementation
+
+The interpreter uses `std::uint32_t` to represent register values. Unsigned
+32-bit arithmetic provides modulo-(2^{32}) behaviour, ensuring that arithmetic
+results retain only the lower 32 bits when stored in a register.
+
+### 5.3 Sign extension
+
+#### rule
+
+Immediate values encoded in fewer than 32 bits are interpreted as signed
+two's-complement values and sign-extended to 32 bits before use.
+
+#### Why it is easy to get wrong
+
+Sign-extension must preserves the value represented by the original bit pattern.
+
+#### Implementation
+
+The decoder sign-extends immediate values while extracting instruction fields,
+before constructing the `DecodedInstruction` representation.
+
+### 5.4 Signed vs unsigned comparison
+
+#### rule
+
+The `SLT`, `BLT`, and `BGE` instructions interpret their register operands as
+signed 32-bit integers when performing comparisons.
+
+#### why it is easy to get wrong
+
+Register values are stored as unsigned 32-bit integers. Performing comparisons
+directly on these values when an instruction requires signed comparison can
+produce incorrect results, particularly when an operand has its most significant
+bit set.
+
+#### Implementation
+
+The interpreter converts register values to signed 32-bit integers before
+performing comparisons in `SLT`, `BLT`, and `BGE`.
+
+### 5.5 Shift-amount masking
+
+#### Rule
+
+For register-register shift instructions, RV32I uses only the lower five bits
+of the second source register (rs2) to determine the shift amount.
+
+#### Why it is easy to get wrong
+
+Using the entire value of `rs2` as the shift amount can produce incorrect
+results. It can also result in undefined behaviour in C++ when the shift amount
+is greater than or equal to the width of the operand.
+
+#### Implementation
+
+The interpreter masks the shift amount with `0x1F`, ensuring that only the lower
+five bits of rs2 determine the number of positions to shift.
+
+### 5.6 Branch and jump targets, and `jalr` target handling
+
+#### Rule
+
+Conditional branches (`BEQ`, `BNE`, `BLT`, and `BGE`) and `JAL` use PC-relative
+addressing. Their target addresses are calculated by adding a sign-extended
+immediate offset to the current program counter.
+
+`JALR` uses register-relative addressing. Its target is calculated by adding a
+sign-extended immediate to the value in the base register (`rs1`), then clearing
+bit `0` of the resulting address.
+
+Under the base RV32I instruction alignment requirement, instruction addresses
+must be four-byte aligned.
+
+#### Why it is easy to get wrong
+
+Branch and jump immediates are signed offsets, not absolute addresses. Treating
+them as absolute addresses or adding them to the wrong reference address produces
+incorrect control flow.
+
+`JALR` also has a special target-address rule: bit `0` must be cleared after
+adding the immediate to the base register. Clearing only bit 0 does not
+necessarily guarantee four-byte alignment.
+
+#### Implementation
+
+After calculating the target address, the interpreter checks whether it is
+four-byte aligned. If the target address is not divisible by four, execution
+returns an `INSTRUCTION_ADDRESS_MISALIGNED` error.
+
+### 5.7 Bugs the tests caught
+
+#### Signed vs Unsigned comparisons
+
+One bug identified during testing involved using unsigned comparisons for the
+`SLT`, `BLT`, and `BGE` instructions instead of signed comparisons. Since
+register values are stored as unsigned 32-bit integers, directly comparing them
+as unsigned values produces incorrect results when operands represent negative
+numbers.
+
+## 6. Hand-Decode Excercises
+
+### 6.1 R-type word
+
+**Hex word:** 0x002081B3
+
+**Binary representation:** 0000 0000 0010 0000 1000 0001 1011 0011
+
+**Instruction format**: R-type
+
+```text
+   31              25 24     20 19      15 14    12 11         7 6             0
+   ┌──────────────────┬──────────┬──────────┬────────┬───────────┬─────────────┐
+   │      funct7      │   rs2    │   rs1    │ funct3 │    rd     │   opcode    │
+   │     0000000      │  00010   │  00001   │  000   │  00011    │   0110011   │
+   └──────────────────┴──────────┴──────────┴────────┴───────────┴─────────────┘
+```
+
+**Field interpretation:**
+
+- `opcode = 0110011`: R-type integer register-register operation.
+- `rd = 00011`: destination register `x3`
+- `rs1 = 00001`: first source register `x1`
+- `rs2 = 00010`: second source register `x2`
+- `funct3 = 000` and funct7 = `0000000`: identifies `ADD`
+
+**Decoded instruction:**
+
+```
+add x3, x1, x2
+```
+**Effect on state:**
+
+The instruction performs:
+
+$$
+\text{x3} \leftarrow \text{x1}+\text{x2}
+$$
+
+For illustration, assume the initial register values are:
+
+| Register | Initial value |
+| -------- | ------------- |
+| x1       | 0x00000005    |
+| x2       | 0x00000003    |
+| x3       | 0x00000000    |
+
+The expected state change is:
+
+| Register | Before     | After      |
+| -------- | ---------- | -----------|
+| x3       | 0x00000000 | 0x00000008 |
+| x1       | 0x00000005 | unchanged  |
+| x1       | 0x00000003 | unchanged  |
+
+**Interpreter verification:**
+
+```text
+[TRACE] PC=0x00000008 WORD=0x002081B3 MNEMONIC=ADD
+        REG x3: 0x00000000 -> 0x00000008
+```
+
+### 6.2 I-type word
+
+**Hex word:** 0x00A00093
+
+**Binary representation:** 0000 0000 1010 0000 0000 0000 1001 0011
+
+**Instruction format**: I-type
+
+```text
+   31                      20 19      15 14    12 11         7 6             0
+   ┌───────────────────────────┬──────────┬────────┬───────────┬─────────────┐
+   │        imm[11:0]          │   rs1    │ funct3 │    rd     │   opcode    │
+   │       000000001010        │  00000   │  000   │   00001   │   0010011   │
+   └───────────────────────────┴──────────┴────────┴───────────┴─────────────┘
+```
+
+**Field interpretation:**
+
+- `opcode = 0110011`: I-type integer operation.
+- `rd = 00001`: destination register `x1`
+- `rs1 = 00000`: source register `x0`
+- `funct3 = 000`: identifies `ADDI`
+- `immediate = 000000001010`: signed immediate value `10`
+
+**Decoded instruction:**
+
+```
+addi x1, x0, 10
+```
+
+**Effect on state:**
+
+The instruction performs:
+
+$$
+\text{x1} \leftarrow \text{x0}+\text{10}
+$$
+
+Since `x0` is always zero:
+
+$$
+\text{x1} \leftarrow \text{0}+\text{10}=10
+$$
+
+The expected state change is:
+
+| Register | Before     | After      |
+| -------- | ---------- | -----------|
+| x0       | 0x00000000 | unchanged  |
+| x1       | 0x00000000 | 0x0000000A |
+
+**Interpreter verification:**
+
+```text
+[TRACE] PC=0x00000000 WORD=0x00A00093 MNEMONIC=ADDI
+        REG x1: 0x00000000 -> 0x0000000A
+```
+
+### 6.3 S-type word
+
+**Hex word:** 0x0020A423
+
+**Binary representation:** 0000 0000 0010 0000 1010 0100 0010 0011
+
+**Instruction format**: S-type
+
+```text
+   31        25 24      20 19      15 14    12 11          7 6             0
+   ┌─────────────┬──────────┬──────────┬────────┬────────────┬─────────────┐
+   │  imm[11:5]  │   rs2    │   rs1    │ funct3 │  imm[4:0]  │   opcode    │
+   │   0000000   │  00010   │  00001   │  010   │   01000    │   0100011   │
+   └─────────────┴──────────┴──────────┴────────┴────────────┴─────────────┘
+```
+
+**Field interpretation:**
+
+- `opcode = 0100011`: S-type store instruction.
+- `rs1 = 00001`: base address register `x1`.
+- `rs2 = 00010`: second source register `x2`, containing the value to be stored.
+- `funct3 = 010`: identifies `SW`.
+- `immediate[11:5] = 0000000` and `immediate[4:0] = 01000`: the two immediate
+   fields are combined to reconstruct the 12-bit immediate `000000001000`,
+   representing the signed value `8`.
+
+**Decoded instruction:**
+
+```
+sw x2, 8(x1)
+```
+
+**Effect on state:**
+
+The instruction calculates the effective memory address by adding the
+sign-extended immediate to the value in the base register:
+
+$$
+\text{Effective address}=x1+8
+$$
+
+For illustration, assume the initial register values are:
+
+| Register | Initial value |
+| -------- | ------------- |
+| `x1`     | `0x00000100`  |
+| `x2`     | `0x12345678`  |
+
+The effective address is `0x00000108`. The instruction stores the 32-bit value
+in `x2` across four consecutive memory locations using little-endian byte
+ordering.
+
+| Memory address | Before | After  |
+| -------------- | ------ | ------ |
+| `0x00000108`   | `0x00` | `0x78` |
+| `0x00000109`   | `0x00` | `0x56` |
+| `0x0000010A`   | `0x00` | `0x34` |
+| `0x0000010B`   | `0x00` | `0x12` |
+
+The source registers `x1` and `x2` remain unchanged.
+
+**Interpreter verification:**
+
+```text
+[TRACE] PC=0x0000000C WORD=0x0020A423 MNEMONIC=SW
+        MEM [0x00000108]: 0x00 -> 0x78
+        MEM [0x00000109]: 0x00 -> 0x56
+        MEM [0x0000010A]: 0x00 -> 0x34
+        MEM [0x0000010B]: 0x00 -> 0x12
+```
+
+## 7. Test programs
+
+### 7.1 Testing approach
+
+The interpreter is validated using integration tests that execute complete
+machine-code programs.
+
+The tests are organised around groups of related instruction operations and
+behaviours:
+
+- Arithmetic: integer arithmetic, logical operations, and register updates.
+- Shifts: logical and arithmetic shift operations, including shift-amount
+  handling.
+- Memory: load and store operations, byte ordering, sign extension, and memory
+  access behaviour.
+- Branches: conditional branch instructions and control-flow changes.
+- Jumps: JAL, JALR, and return-address calculation.
+- Loop sum: repeated instruction execution, conditional loop termination, and
+  accumulated results.
+- Array sum: Memory-backed iteration, pointer arithmetic, repeated loads, and
+  accumulation within a loop.
+
+The test programs are maintained in [`tests/`](../tests), with the test
+implementation responsible for loading programs, executing them, and validating
+their results.
+
+### 7.2 Test coverage
+
+The following table summarises the integration tests and the behaviours
+they validate.
+
+| Test program    | Instructions exercised                                 | Validation focus                               |
+|-----------------|--------------------------------------------------------|------------------------------------------------|
+| `arithmetic.hex`| `LUI`, `ADDI`, `ADD`, `SUB`, `AND`, `OR`, `XOR`, `SLT` | Arithmetic, logical operations, signed comparison, and register behaviour |
+| `shifts.hex`    | `SLL`, `SRL`, `SRA`, `LUI`, `ADDI`                     | Shift operations and shift-amount handling     |
+| `memory.hex`    | `LW`, `SW`, `LB`, `SB`, `LUI`, `ADDI`                  | Memory access, little-endian byte ordering, and byte sign extension |
+| `branches.hex`  | `BEQ`, `BNE`, `BLT`, `BGE`, `ADDI`                     | Conditional branch evaluation and control flow |
+| `jumps.hex`     | `JAL`, `JALR`, `ADDI`                                  | Jump targets and return-address calculation    |
+| `loop_sum.hex`  | `ADD`, `ADDI`, `BLT`                                   | Repeated execution, loop termination, and accumulation |
+| `array_sum.hex` | `LW`, `SW`, `ADD`, `ADDI`, `BNE`                       | Memory-backed iteration, pointer arithmetic, and accumulation |
+
+The tests cover the supported instruction operations individually and in
+combination. In particular, the loop-sum and array-sum programs validatea
+interactions between arithmetic, memory access, and control-flow operations.
+
+### 7.3 Test results
+
+Test results are determined by comparing the interpreter's execution state
+against the expected register and memory values defined by the tests.
+
+The complete test programs and their corresponding test implementation are
+available in the project repository under [`tests/`](../tests).
+
